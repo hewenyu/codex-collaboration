@@ -51,19 +51,19 @@ codex login
 
 #### 2. 安装Skill
 
-**方法1：直接下载.skill文件**
-1. 从 [Releases](../../releases) 下载 `codex-collaboration.skill`
-2. 在Claude中导入该skill文件
+### For Claude.ai
+1. Download [codex-collaboration.skill](https://github.com/hewenyu/codex-collaboration/releases/latest/download/codex-collaboration.skill)
+2. Go to Claude.ai → Settings → Features
+3. Upload the .skill file
+4. Toggle the skill on
 
-**方法2：从源码构建**
+### For Claude Code
 ```bash
-# 克隆仓库
+# Clone and install
 git clone https://github.com/hewenyu/codex-collaboration.git
-cd codex-collaboration
-
-# 打包skill（需要安装skill-creator）
-python /path/to/skill-creator/scripts/package_skill.py codex-collaboration ./
+cp -r codex-collaboration/codex-collaboration ~/.claude/skills/codex-collaboration
 ```
+
 
 #### 3. 基本使用
 
