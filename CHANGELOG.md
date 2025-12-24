@@ -150,10 +150,10 @@ This is the initial release of Codex-Collaboration Skill. It represents weeks of
 
 ## Links
 
-- [GitHub Repository](https://github.com/YOUR_USERNAME/codex-collaboration)
-- [Issues](https://github.com/YOUR_USERNAME/codex-collaboration/issues)
-- [Discussions](https://github.com/YOUR_USERNAME/codex-collaboration/discussions)
+- [GitHub Repository](https://github.com/hewenyu/codex-collaboration)
+- [Issues](https://github.com/hewenyu/codex-collaboration/issues)
+- [Discussions](https://github.com/hewenyu/codex-collaboration/discussions)
 
 ---
 
-**Note:** Replace `YOUR_USERNAME` with your actual GitHub username in all links.
+

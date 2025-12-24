@@ -29,7 +29,7 @@ Thank you for your interest in contributing to Codex-Collaboration Skill! We wel
 #### 2. 克隆到本地
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/codex-collaboration.git
+git clone https://github.com/hewenyu/codex-collaboration.git
 cd codex-collaboration
 ```
 
@@ -299,7 +299,7 @@ Click the "Fork" button in the upper right corner.
 #### 2. Clone Locally
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/codex-collaboration.git
+git clone https://github.com/hewenyu/codex-collaboration.git
 cd codex-collaboration
 ```
 
