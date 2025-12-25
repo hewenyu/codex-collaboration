@@ -1,303 +1,199 @@
 ---
 name: codex-collaboration
-description: "Collaborative programming workflow using OpenAI Codex CLI as an expert advisor. Use this skill for ANY programming task including code writing, debugging, refactoring, architecture design, code review, and documentation. This skill establishes a rigorous workflow where Claude executes and Codex advises, with critical thinking and debate at every step. Triggers include implementing features, fixing bugs, writing code, code review requests, technical planning, or any software development task."
+description: "Multi-agent development workflow with Codex quality gates. Orchestrates prd-generator, gemini-ui-prototyper, visual-designer, project-architect-supervisor, code-executor, and deep-code-search agents. Use for ANY software development project. Phases: (1) Requirements/UI design with human intervention, (2) Architecture planning with user confirmation, (3) Automatic code execution with mandatory Codex review. Triggers: any programming task, project planning, feature implementation, code writing."
 ---
 
-# Codex Collaboration Skill
+# Codex Multi-Agent Development Workflow
 
-## Overview
+## Architecture Overview
 
-This skill establishes a rigorous collaborative workflow between Claude (as primary executor) and OpenAI Codex CLI (as expert advisor and reviewer). The workflow emphasizes critical thinking, mutual verification, and continuous improvement through constructive debate.
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                      Phase 1: 需求设计 (人工干预)                    │
+│                                                                     │
+│  prd-generator        →  产品需求文档                               │
+│  gemini-ui-prototyper →  UI 原型设计                               │
+│  visual-designer      →  架构图/流程图                              │
+│                                                                     │
+│  ⚠️  需要用户确认后才能进入下一阶段                                   │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                   Phase 2: 架构规划 (人工确认)                       │
+│                                                                     │
+│  project-architect-supervisor                                       │
+│    ├── 生成完整架构树 (ROADMAP.md)                                  │
+│    ├── 拆分为 3-6 个 Phase                                          │
+│    └── 每个 Phase 拆分为可执行的 TODO (PHASE_PLAN.md)               │
+│                                                                     │
+│  ⚠️  用户确认后自动进入执行阶段                                      │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                    Phase 3: 自动执行 (Plan 模式)                     │
+│                                                                     │
+│  ┌──────────────────────────────────────────────────────────────┐  │
+│  │  For each TODO in PHASE_PLAN:                                │  │
+│  │                                                              │  │
+│  │  1. code-executor 执行实现                                   │  │
+│  │           │                                                  │  │
+│  │           ▼                                                  │  │
+│  │  2. deep-code-search 代码分析 (可选)                         │  │
+│  │           │                                                  │  │
+│  │           ▼                                                  │  │
+│  │  3. codex review ══════════════════════════════════════════ │  │
+│  │           │                                                  │  │
+│  │      ┌────┴────┐                                             │  │
+│  │    PASS      FAIL → Fix → Re-review                          │  │
+│  │      │                                                       │  │
+│  │      ▼                                                       │  │
+│  │   git commit → Next TODO                                     │  │
+│  └──────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+│  🔄 自动循环直到所有 TODO 完成                                       │
+└─────────────────────────────────────────────────────────────────────┘
+```
 
-**Key Principles:**
-- **Claude executes, Codex advises** - Claude makes final implementation decisions
-- **Critical thinking required** - Never blindly accept suggestions
-- **Debate drives quality** - Disagreements lead to better solutions  
-- **Verify at every step** - Review, question, and validate continuously
-- **Production quality** - Always rewrite code for enterprise standards
+## Agent Responsibilities
 
-**Default Configuration:**
-- Model: `gpt-5.2-codex`
-- Reasoning: `xhigh`
-- Mode: Plan-based with todolist execution
+| Agent | Phase | Responsibility | Automation |
+|-------|-------|----------------|------------|
+| `prd-generator` | Requirements | PRD creation | ❌ Human |
+| `gemini-ui-prototyper` | Requirements | UI prototypes | ❌ Human |
+| `visual-designer` | Requirements | Diagrams/flows | ❌ Human |
+| `project-architect-supervisor` | Planning | Architecture, task breakdown | ❌ Confirm |
+| `code-executor` | Execution | Implementation | ✅ Auto |
+| `deep-code-search` | Execution | Code analysis | ✅ Auto |
+| `Codex (gpt-5.2)` | Execution | Code review | ✅ Auto |
 
-## When to Use This Skill
+## Workflow Execution
 
-**ALWAYS use this skill for:**
-- Any programming or coding task
-- Code review and debugging
-- Architecture and design decisions
-- Documentation writing (technical)
-- Refactoring and optimization
-- Feature implementation
-- Bug fixing
-- Technical analysis
+### Starting a New Project
 
-**The workflow applies to ALL programming tasks, regardless of complexity.**
-
-## Core Workflow
-
-### Phase 1: Requirement Analysis & Planning
-
-1. **Receive task from user**
-2. **Form initial understanding** of requirements
-3. **Consult Codex for requirement analysis:**
-   ```bash
-   codex exec --model gpt-5.2-codex --reasoning xhigh "
-   Analyze this requirement: [USER_REQUEST]
-   Provide: clarifications, ambiguities, constraints, criteria, risks
-   "
+1. **Gather Requirements** (Human Phase)
    ```
-4. **Critically evaluate Codex's analysis** - Form your own assessment
-5. **Debate differences** if your analysis differs from Codex's
-6. **Request implementation plan from Codex:**
-   ```bash
-   codex exec --model gpt-5.2-codex --reasoning xhigh "
-   Create implementation plan: phases, todolist, dependencies, blockers
-   "
-   ```
-7. **Develop your own plan** independently
-8. **Compare both plans** and debate significant differences
-9. **Finalize plan** incorporating best elements from both
-
-### Phase 2: Todo Execution Loop
-
-For each todo in the finalized plan:
-
-1. **Request code prototype from Codex** (unified diff ONLY):
-   ```bash
-   codex exec --model gpt-5.2-codex --reasoning xhigh "
-   Generate ONLY unified diff patch for: [TODO]
-   DO NOT make actual file changes
-   Include comments and edge case handling
-   " > prototype.patch
-   ```
-
-2. **Analyze prototype critically:**
-   - Does it fully address requirements?
-   - Are there potential issues or gaps?
-   - Is the approach sound?
-   - What alternatives exist?
-
-3. **Rewrite for production** - DO NOT simply apply the patch:
-   - Use prototype as logical reference only
-   - Write enterprise-quality code from scratch
-   - Ensure clean, readable, maintainable code
-   - Comprehensive error handling
-   - Proper documentation
-
-4. **Immediate code review from Codex:**
-   ```bash
-   codex exec --model gpt-5.2-codex --reasoning xhigh "
-   Review implementation: correctness, bugs, edge cases, 
-   performance, security, quality, improvements
-   [Include git diff]
-   "
+   User: "我想做一个视频脚本生成平台"
+   → Delegate to prd-generator for PRD
+   → Delegate to gemini-ui-prototyper for UI mockup
+   → Delegate to visual-designer for architecture diagram
    ```
 
-5. **Critical review analysis:**
-   - Evaluate each review point
-   - Challenge feedback you disagree with
-   - Prioritize action items
-   - Decide what to fix vs defer
-
-6. **Completeness check:**
-   ```bash
-   codex exec --model gpt-5.2-codex --reasoning xhigh "
-   Check completeness: criteria met, edge cases, errors, 
-   tests, documentation, missing functionality
-   "
+2. **Architecture Planning** (Confirmation Required)
+   ```
+   User: "开始规划"
+   → Delegate to project-architect-supervisor
+   → Generate ROADMAP.md with architecture tree
+   → Generate PHASE_PLAN.md with TODOs
+   → Present plan and WAIT for user confirmation
    ```
 
-7. **Debate missing items** if any identified
-
-8. **Reverse code optimization** (if applicable):
-   ```bash
-   codex exec --model gpt-5.2-codex --reasoning xhigh "
-   Analyze reverse code for optimization:
-   Our implementation: [DESCRIPTION]
-   Reverse reference: reverse_meta/[PATH]
-   "
+3. **Automatic Execution** (After Confirmation)
+   ```
+   User: "确认" or "开始执行"
+   → Enter automatic execution loop
+   → Execute each TODO via code-executor
+   → Mandatory Codex review before commit
+   → Update progress after each TODO
+   → Continue until all TODOs complete
    ```
 
-9. **Apply selective improvements** - Only what makes sense
+## Codex Integration
 
-10. **Generate commit message with Codex:**
-    ```bash
-    codex exec --model gpt-5.2-codex --reasoning medium "
-    Generate conventional commit message for:
-    TODO: [DESCRIPTION]
-    Changes: $(git diff --staged)
-    "
-    ```
-
-11. **Commit changes to git:**
-    ```bash
-    git add .
-    git commit -m "[CODEX_GENERATED_MESSAGE]"
-    ```
-
-12. **Mark todo complete** after verification
-
-### Phase 3: Final Review
-
-After all todos complete:
-
+### Review Command
 ```bash
-codex exec --model gpt-5.2-codex --reasoning xhigh "
-Final project review: requirements, quality, security,
-maintainability, documentation, technical debt
-[Include complete git diff]
+# Standard review
+codex review
+
+# Detailed review
+codex exec -m gpt-5.2 "
+Review implementation for: [TASK_DESCRIPTION]
+$(git diff)
+Check: correctness, bugs, security, quality, edge cases
+Verdict: PASS or FAIL with specific issues
 "
 ```
 
-## Critical Thinking Requirements
-
-Throughout the workflow, ALWAYS:
-
-**Question Codex's suggestions:**
-- Why this approach?
-- What assumptions are being made?
-- Are there better alternatives?
-- What is being overlooked?
-
-**Question your own work:**
-- Am I following blindly?
-- Have I thought independently?
-- Am I overcomplicating?
-- What would I do without Codex?
-
-**Engage in debate:**
-- Have we explored all options?
-- Is there a third option?
-- What's the real trade-off?
-- Are we optimizing for the right thing?
-
-## Handling Disagreements
-
-When you disagree with Codex:
-
-1. **Articulate clearly** - State position and reasoning
-2. **Request clarification** - Ask Codex to explain
-3. **Present alternatives** - Show your approach
-4. **Demand justification** - Request concrete rationale
-5. **Make the call** - You have final decision authority
-
-Example:
-```bash
-codex exec --model gpt-5.2-codex --reasoning xhigh "
-I disagree with [CODEX_SUGGESTION] because [REASONS].
-I propose [ALTERNATIVE] instead because [RATIONALE].
-Address my concerns, critique my alternative, 
-provide evidence or acknowledge my point.
-"
-```
-
-## Quality Standards
-
-Every todo must meet:
-- ✓ Correctness - Fully addresses requirements
-- ✓ Quality - Production-grade code
-- ✓ Maintainability - Clean, documented, readable
-- ✓ Robustness - Handles edge cases and errors
-- ✓ Performance - Reasonable efficiency
-- ✓ Security - No obvious vulnerabilities
-
-## Todo Checklist
-
-For each todo:
-- [ ] Codex prototype requested (diff only!)
-- [ ] Prototype analyzed critically
-- [ ] Production code written from scratch
-- [ ] Immediate Codex review obtained
-- [ ] Review feedback evaluated critically
-- [ ] Completeness verified
-- [ ] Missing items debated and resolved
-- [ ] Reverse code optimization explored (if applicable)
-- [ ] Improvements applied selectively
-- [ ] Final verification passed
-- [ ] Commit message generated with Codex
-- [ ] Changes committed to git
-- [ ] Todo marked complete
-
-## Anti-Patterns to Avoid
-
-❌ **Blind acceptance** - Never apply suggestions without critical thought
-❌ **Copy-paste coding** - Never directly apply patches without rewriting  
-❌ **Skipping debate** - Never avoid disagreement
-❌ **Ignoring reverse code** - Always check for optimization opportunities
-❌ **Rushing reviews** - Take time to thoroughly analyze
-❌ **Missing verification** - Always verify completeness
-❌ **Siloed thinking** - Consider the bigger picture
-
-## Helper Script
-
-Use `scripts/codex_helper.py` for convenient Codex interactions:
-
+### Review Gate Logic
 ```python
-from scripts.codex_helper import CodexHelper
-
-helper = CodexHelper(project_dir="/path/to/project")
-
-# Analyze requirements
-analysis = helper.analyze_requirements(user_request)
-
-# Create plan
-plan = helper.create_implementation_plan(requirements)
-
-# Request prototype
-helper.request_code_prototype(todo, requirements, files)
-
-# Review code
-review = helper.review_code(todo, git_diff)
-
-# Check completeness
-completeness = helper.check_completeness(todo, summary)
-
-# Analyze reverse code
-optimizations = helper.analyze_reverse_code(our_code, reverse_path)
+def codex_review_gate(task):
+    while True:
+        result = codex_review(task)
+        if result.passed:
+            git_commit(task)
+            return
+        else:
+            fix_issues(result.issues)
+            # Re-submit automatically
 ```
 
-## Additional Resources
+### No Exceptions
+- **EVERY** code change must pass Codex review
+- **NEVER** skip review, even for "small" changes
+- **NEVER** commit without PASS verdict
 
-- **references/workflow-details.md** - Comprehensive step-by-step workflow with examples
-- **references/codex-commands.md** - Complete Codex CLI command reference
-- **references/reverse-engineering.md** - Guide to analyzing reverse code for optimization
-- **scripts/codex_helper.py** - Python helper for Codex CLI interactions
+## File Structure
 
-## Quick Start Example
-
-```bash
-# User task: "Implement user authentication"
-
-# 1. Analyze with Codex
-codex exec --model gpt-5.2-codex --reasoning xhigh \
-  "Analyze requirement: Implement user authentication with JWT"
-
-# 2. Get plan
-codex exec --model gpt-5.2-codex --reasoning xhigh \
-  "Create implementation plan with todolist for JWT authentication"
-
-# 3. For each todo, get prototype
-codex exec --model gpt-5.2-codex --reasoning xhigh \
-  "Generate unified diff patch ONLY for: Create JWT token service" \
-  > prototype.patch
-
-# 4. Review prototype, rewrite for production
-
-# 5. Get review
-codex exec --model gpt-5.2-codex --reasoning xhigh \
-  "Review this implementation: $(git diff)"
-
-# 6. Continue with next todo...
+```
+project/
+├── CLAUDE.md                    # Workflow configuration
+├── .claude/
+│   ├── ROADMAP.md               # Project roadmap + architecture
+│   └── phases/
+│       ├── phase-1_xxx/
+│       │   ├── PHASE_PLAN.md    # Phase plan
+│       │   └── TASK-001_xxx.md  # Task specs
+│       └── phase-N_xxx/
+├── issues/
+│   └── phase-N_xxx/
+│       ├── PHASE_SUMMARY.md     # Phase summary
+│       └── TASK-001_xxx.md      # Task reports
+├── docs/
+│   ├── PRD-xxx.md               # PRDs
+│   └── UI-xxx.html              # UI prototypes
+└── src/                         # Source code
 ```
 
-## Remember
+## Progress Tracking
 
-- **Codex advises, Claude decides**
-- **Debate is essential for quality**
-- **Never skip critical thinking**
-- **Always rewrite for production standards**
-- **Verify at every step**
+After each TODO completion:
+```
+═══════════════════════════════════════════════════
+📊 Progress Update
+═══════════════════════════════════════════════════
+Phase: 2/4 - Core Features
+Task:  3/5 - TASK-003 Complete ✅
 
-The goal is not speed, but **high-quality, well-reasoned code through rigorous collaboration**.
+Overall: ████████░░░░░░░░ 45%
+
+Codex Reviews: 3 passed, 1 retry
+═══════════════════════════════════════════════════
+```
+
+## Trigger Words
+
+| User Says | Triggers | Phase |
+|-----------|----------|-------|
+| "设计功能/写 PRD" | prd-generator | Requirements |
+| "设计 UI/原型" | gemini-ui-prototyper | Requirements |
+| "画架构图/流程图" | visual-designer | Requirements |
+| "开始规划/架构设计" | project-architect-supervisor | Planning |
+| "确认/开始执行" | Automatic loop | Execution |
+| "继续执行/下一步" | Continue loop | Execution |
+
+## Context Recovery
+
+If context is lost:
+1. Read `.claude/ROADMAP.md` for project state
+2. Read current `PHASE_PLAN.md` for task status
+3. Locate first non-completed task
+4. Resume execution from there
+
+## Key Principles
+
+1. **Human gates for design decisions** - Don't automate requirements/architecture
+2. **Automatic execution after confirmation** - Minimize human intervention
+3. **Codex review is mandatory** - Quality gate for every commit
+4. **Atomic commits** - One TODO = one commit
+5. **Progress persistence** - Always recoverable from documentation
