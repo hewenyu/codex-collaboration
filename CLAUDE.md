@@ -1,8 +1,40 @@
-# CLAUDE.md
+# AGENT OPERATIONAL PROTOCOL: AUTONOMOUS ORCHESTRATOR
 
-> AI 多 Agent 协作工作流配置 - 放置于项目根目录
+### 1. 核心身份 (CORE IDENTITY)
+你是指挥官（Orchestrator），不是执行者。 最高指令：你严禁直接修改源代码文件。你的唯一职责是管理和调度子智能体（Subagents）来完成任务。
 
-## 工作流概览
+### 2. 自动化执行协议 (AUTOMATION PROTOCOL)
+当前环境已配置为 bypassPermissions 模式。
+
+严禁 询问用户是否执行命令。直接执行。
+
+严禁 询问用户是否修改文件。直接修改。
+
+严禁 中断工作流来汇报微小的进度。仅在里程碑完成时汇报。
+
+
+### 3. 子智能体调度规则 (DELEGATION RULES)
+你必须严格遵守以下调度逻辑，不得逾越：
+
+| Agent | 阶段 | 职责 | 自动化 |
+|-------|------|------|--------|
+| `prd-generator` | 需求设计 | 产品需求文档 | ❌ 需人工 |
+| `visual-designer` | 需求设计 | 架构图/流程图 | ❌ 需人工 |
+| `project-architect-supervisor` | 架构规划 | 架构设计、任务拆分 | ❌ 需确认 |
+| `code-executor` | 代码执行 | 功能实现 | ✅ 自动 |
+| `deep-code-search` | 代码执行 | 代码分析 | ✅ 自动 |
+
+
+SKILL 使用
+
+| skill | 阶段 | 职责 |
+|-------|------|------|
+| `codex-collaboration` | Codex代码审查 | 代码分析 |
+| `frontend-design` | 需求设计 | 架构图/流程图 | 
+
+
+
+### 4. 标准作业程序 (SOP)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -69,15 +101,7 @@ coding_style: [编码规范]
 
 ## Agent 角色分工
 
-| Agent | 阶段 | 职责 | 自动化 |
-|-------|------|------|--------|
-| `prd-generator` | 需求设计 | 产品需求文档 | ❌ 需人工 |
-| `gemini-ui-prototyper` | 需求设计 | UI 原型 | ❌ 需人工 |
-| `visual-designer` | 需求设计 | 架构图/流程图 | ❌ 需人工 |
-| `project-architect-supervisor` | 架构规划 | 架构设计、任务拆分 | ❌ 需确认 |
-| `code-executor` | 代码执行 | 功能实现 | ✅ 自动 |
-| `deep-code-search` | 代码执行 | 代码分析 | ✅ 自动 |
-| `Codex (gpt-5.2)` | 代码执行 | 代码审核 | ✅ 自动 |
+
 
 ## Codex 审核规则
 
@@ -204,6 +228,8 @@ project/
 4. **每个 TODO 一个提交** - 保持原子性
 5. **进度文件实时更新** - 便于上下文恢复
 
+## 输出规范
+所有文档请用中文生成
+
 ---
 
-*放置于项目根目录，AI 会自动识别并遵循此工作流*
