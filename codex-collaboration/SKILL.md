@@ -12,7 +12,7 @@ Provides Codex CLI interaction patterns for code review and consultation.
 ### Code Review (Primary Use)
 ```bash
 # Standard review
-codex review
+codex review --uncommitted
 
 # Review specific changes
 codex exec -m gpt-5.2 "
